@@ -9,7 +9,9 @@ import 'package:todo_list_codsoft/main.dart';
 import 'package:todo_list_codsoft/models.dart';
 
 class Todo extends StatefulWidget {
-  const Todo({super.key});
+  Todo({super.key});
+
+  List<dynamic> filteredList = [] + listOfTodo;
 
   @override
   State<Todo> createState() => _TodoState();
@@ -18,31 +20,39 @@ class Todo extends StatefulWidget {
 class _TodoState extends State<Todo> {
   String searchText = "";
   TextEditingController _controller = TextEditingController(text: "");
-  var filteredList = [];
+  bool toShowAllContents = true;
 
-  void filterSearchResults(query) {
-    filteredList.clear();
+  void filterSearchResults(String query) {
+    toShowAllContents = false;
     if (query.isNotEmpty) {
       for (var item in listOfTodo) {
         if (item.title.toLowerCase().contains(query.toLowerCase())) {
-          filteredList.add(item);
+          widget.filteredList.clear();
+          widget.filteredList.add(item);
+          setState(() {});
         }
+        print(item.title + "=" + query);
       }
+      return;
+    } else if (query == "") {
+      widget.filteredList.addAll(listOfTodo);
+      setState(() {});
     } else {
+      widget.filteredList.clear();
       //show no results found.
-      filteredList.addAll(listOfTodo);
     }
-    setState(() {});
   }
 
   @override
   void initState() {
     super.initState();
-    filteredList = listOfTodo;
   }
 
   @override
   Widget build(BuildContext context) {
+    // if (toShowAllContents) {
+    //   widget.filteredList.addAll(listOfTodo);
+    // }
     return Scaffold(
       drawer: Drawer(
         child: Column(
@@ -123,35 +133,34 @@ class _TodoState extends State<Todo> {
             Card(
               shape: RoundedRectangleBorder(
                   borderRadius: BorderRadius.circular(25)),
-              child: Padding(
-                padding: const EdgeInsets.symmetric(horizontal: 12.0),
-                child: AnimatedSearchBar(
-                    label: "Search Something Here",
-                    controller: _controller,
-                    labelStyle: TextStyle(fontSize: 16),
-                    searchStyle: TextStyle(color: Colors.black),
-                    cursorColor: Colors.black,
-                    textInputAction: TextInputAction.done,
-                    searchDecoration: InputDecoration(
-                      hintText: "Search",
-                      alignLabelWithHint: true,
-                      fillColor: Colors.black,
-                      focusColor: Colors.black,
-                      hintStyle: TextStyle(color: Colors.black),
-                      border: InputBorder.none,
-                    ),
-                    onChanged: (value) {
-                      print("value on Change");
-                      setState(() {
-                        filterSearchResults(value);
-                      });
-                    },
-                    onFieldSubmitted: (value) {
-                      print("value on Field Submitted");
-                      setState(() {
-                        filterSearchResults(value);
-                      });
-                    }),
+              child: AnimatedSearchBar(
+                label: "\t\tSearch Something Here",
+                controller: _controller,
+                labelStyle: TextStyle(
+                  fontSize: 16,
+                ),
+                searchStyle: TextStyle(color: Colors.black),
+                cursorColor: Colors.black,
+                textInputAction: TextInputAction.done,
+                searchDecoration: InputDecoration(
+                  hintText: "Search",
+                  alignLabelWithHint: true,
+                  fillColor: Colors.black,
+                  focusColor: Colors.black,
+                  hintStyle: TextStyle(color: Colors.black),
+                  border: InputBorder.none,
+                ),
+                closeIcon: Icon(
+                  Icons.close,
+                ),
+                onChanged: (value) {
+                  print("value on Change" + value);
+                  filterSearchResults(value);
+                },
+                onFieldSubmitted: (value) {
+                  print("value on Field Submitted");
+                  filterSearchResults(value);
+                },
               ),
             ),
             Expanded(
@@ -281,10 +290,11 @@ class _TodoState extends State<Todo> {
                                 children: [
                                   Expanded(
                                     child: customCard(
-                                      description:
-                                          filteredList[index].description,
-                                      time: filteredList[index].targetTime,
-                                      title: filteredList[index].title,
+                                      description: widget
+                                          .filteredList[index].description,
+                                      time:
+                                          widget.filteredList[index].targetTime,
+                                      title: widget.filteredList[index].title,
                                       index: index,
                                       context: context,
                                     ),
@@ -306,7 +316,7 @@ class _TodoState extends State<Todo> {
                                 ],
                               );
                             },
-                            itemCount: filteredList.length,
+                            itemCount: widget.filteredList.length,
                           ),
                         )
                       ],
@@ -323,7 +333,7 @@ class _TodoState extends State<Todo> {
 }
 
 Widget customCard({title, description, time, index, context}) {
-  print(time);
+  // print(time);
   return Row(
     children: [
       Padding(
