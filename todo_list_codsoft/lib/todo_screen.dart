@@ -27,19 +27,26 @@ class _TodoState extends State<Todo> {
     if (query.isNotEmpty) {
       for (var item in listOfTodo) {
         if (item.title.toLowerCase().contains(query.toLowerCase())) {
-          widget.filteredList.clear();
-          widget.filteredList.add(item);
-          setState(() {});
+          setState(() {
+            widget.filteredList.clear();
+            widget.filteredList.add(item);
+          });
+        } else {
+          setState(() {
+            widget.filteredList.clear();
+          });
         }
         print(item.title + "=" + query);
       }
       return;
-    } else if (query == "") {
-      widget.filteredList.addAll(listOfTodo);
-      setState(() {});
     } else {
-      widget.filteredList.clear();
-      //show no results found.
+      ScaffoldMessenger.of(context)
+          .showSnackBar(SnackBar(content: Text("No tasks found")));
+      setState(() {
+        widget.filteredList.clear();
+        widget.filteredList.addAll(listOfTodo);
+      });
+      return;
     }
   }
 
@@ -143,19 +150,15 @@ class _TodoState extends State<Todo> {
                 cursorColor: Colors.black,
                 textInputAction: TextInputAction.done,
                 searchDecoration: InputDecoration(
-                  hintText: "Search",
+                  // hintText: "Search",
                   alignLabelWithHint: true,
                   fillColor: Colors.black,
                   focusColor: Colors.black,
                   hintStyle: TextStyle(color: Colors.black),
                   border: InputBorder.none,
                 ),
-                closeIcon: Icon(
-                  Icons.close,
-                ),
-                onChanged: (value) {
-                  print("value on Change" + value);
-                  filterSearchResults(value);
+                onChanged: (val) {
+                  setState(() {});
                 },
                 onFieldSubmitted: (value) {
                   print("value on Field Submitted");
@@ -281,44 +284,58 @@ class _TodoState extends State<Todo> {
                             thickness: 2,
                           ),
                         ),
-                        SizedBox(
-                          height: MediaQuery.of(context).size.height * 0.4,
-                          child: ListView.builder(
-                            physics: NeverScrollableScrollPhysics(),
-                            itemBuilder: (context, index) {
-                              return Row(
-                                children: [
-                                  Expanded(
-                                    child: customCard(
-                                      description: widget
-                                          .filteredList[index].description,
-                                      time:
-                                          widget.filteredList[index].targetTime,
-                                      title: widget.filteredList[index].title,
-                                      index: index,
-                                      context: context,
-                                    ),
-                                  ),
-                                  IconButton(
+                        widget.filteredList.isNotEmpty
+                            ? SizedBox(
+                                height:
+                                    MediaQuery.of(context).size.height * 0.4,
+                                child: ListView.builder(
+                                  physics: NeverScrollableScrollPhysics(),
+                                  itemBuilder: (context, index) {
+                                    return Row(
+                                      children: [
+                                        Expanded(
+                                          child: customCard(
+                                            description: widget
+                                                .filteredList[index]
+                                                .description,
+                                            time: widget
+                                                .filteredList[index].targetTime,
+                                            title: widget
+                                                .filteredList[index].title,
+                                            index: index,
+                                            context: context,
+                                          ),
+                                        ),
+                                        IconButton(
+                                          onPressed: () {
+                                            setState(() {
+                                              listOfTodo.removeAt(index);
+                                            });
+                                            ScaffoldMessenger.of(context)
+                                                .showSnackBar(SnackBar(
+                                              content: Text(
+                                                "Congratulations :>\n\tKeep going on",
+                                              ),
+                                            ));
+                                          },
+                                          icon: Icon(Icons.done),
+                                        ),
+                                      ],
+                                    );
+                                  },
+                                  itemCount: widget.filteredList.length,
+                                ),
+                              )
+                            : SizedBox(
+                                child: ElevatedButton(
                                     onPressed: () {
                                       setState(() {
-                                        listOfTodo.removeAt(index);
+                                        widget.filteredList.clear();
+                                        widget.filteredList.addAll(listOfTodo);
                                       });
-                                      ScaffoldMessenger.of(context)
-                                          .showSnackBar(SnackBar(
-                                        content: Text(
-                                          "Congratulations :>\n\tKeep going on",
-                                        ),
-                                      ));
                                     },
-                                    icon: Icon(Icons.done),
-                                  ),
-                                ],
-                              );
-                            },
-                            itemCount: widget.filteredList.length,
-                          ),
-                        )
+                                    child: Text("Reload data")),
+                              )
                       ],
                     ),
                   ],
