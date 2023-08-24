@@ -1,5 +1,6 @@
 // ignore_for_file: prefer_const_constructors, prefer_const_literals_to_create_immutables
 
+import 'package:animated_search_bar/animated_search_bar.dart';
 import 'package:flutter/material.dart';
 import 'package:intl/intl.dart';
 import 'package:shared_preferences/shared_preferences.dart';
@@ -15,10 +16,29 @@ class Todo extends StatefulWidget {
 }
 
 class _TodoState extends State<Todo> {
+  String searchText = "";
+  TextEditingController _controller = TextEditingController(text: "");
+  var filteredList = [];
+
+  void filterSearchResults(query) {
+    filteredList.clear();
+    if (query.isNotEmpty) {
+      for (var item in listOfTodo) {
+        if (item.title.toLowerCase().contains(query.toLowerCase())) {
+          filteredList.add(item);
+        }
+      }
+    } else {
+      //show no results found.
+      filteredList.addAll(listOfTodo);
+    }
+    setState(() {});
+  }
+
   @override
   void initState() {
     super.initState();
-    setState(() {});
+    filteredList = listOfTodo;
   }
 
   @override
@@ -57,6 +77,8 @@ class _TodoState extends State<Todo> {
                 onPressed: () async {
                   final sp = await SharedPreferences.getInstance();
                   sp.clear();
+                  listOfTodo.clear();
+
                   Navigator.of(context).pushReplacement(
                     MaterialPageRoute(
                       builder: (context) => MyHomePage(),
@@ -100,27 +122,36 @@ class _TodoState extends State<Todo> {
             ),
             Card(
               shape: RoundedRectangleBorder(
-                  borderRadius: BorderRadius.circular(18)),
+                  borderRadius: BorderRadius.circular(25)),
               child: Padding(
                 padding: const EdgeInsets.symmetric(horizontal: 12.0),
-                child: Row(
-                  children: [
-                    Icon(
-                      Icons.search,
-                      size: 20,
+                child: AnimatedSearchBar(
+                    label: "Search Something Here",
+                    controller: _controller,
+                    labelStyle: TextStyle(fontSize: 16),
+                    searchStyle: TextStyle(color: Colors.black),
+                    cursorColor: Colors.black,
+                    textInputAction: TextInputAction.done,
+                    searchDecoration: InputDecoration(
+                      hintText: "Search",
+                      alignLabelWithHint: true,
+                      fillColor: Colors.black,
+                      focusColor: Colors.black,
+                      hintStyle: TextStyle(color: Colors.black),
+                      border: InputBorder.none,
                     ),
-                    Expanded(
-                      child: Padding(
-                        padding: const EdgeInsets.all(12.0),
-                        child: Text("Search Courses"),
-                      ),
-                    ),
-                    Padding(
-                      padding: const EdgeInsets.all(8.0),
-                      child: Icon(Icons.segment_outlined),
-                    ),
-                  ],
-                ),
+                    onChanged: (value) {
+                      print("value on Change");
+                      setState(() {
+                        filterSearchResults(value);
+                      });
+                    },
+                    onFieldSubmitted: (value) {
+                      print("value on Field Submitted");
+                      setState(() {
+                        filterSearchResults(value);
+                      });
+                    }),
               ),
             ),
             Expanded(
@@ -251,9 +282,9 @@ class _TodoState extends State<Todo> {
                                   Expanded(
                                     child: customCard(
                                       description:
-                                          listOfTodo[index].description,
-                                      time: listOfTodo[index].targetTime,
-                                      title: listOfTodo[index].title,
+                                          filteredList[index].description,
+                                      time: filteredList[index].targetTime,
+                                      title: filteredList[index].title,
                                       index: index,
                                       context: context,
                                     ),
@@ -262,19 +293,20 @@ class _TodoState extends State<Todo> {
                                     onPressed: () {
                                       setState(() {
                                         listOfTodo.removeAt(index);
-                                        ScaffoldMessenger.of(context)
-                                            .showSnackBar(SnackBar(
-                                          content: Text(
-                                              "Congratulations :>\n\tKeep going on"),
-                                        ));
                                       });
+                                      ScaffoldMessenger.of(context)
+                                          .showSnackBar(SnackBar(
+                                        content: Text(
+                                          "Congratulations :>\n\tKeep going on",
+                                        ),
+                                      ));
                                     },
                                     icon: Icon(Icons.done),
                                   ),
                                 ],
                               );
                             },
-                            itemCount: listOfTodo.length,
+                            itemCount: filteredList.length,
                           ),
                         )
                       ],

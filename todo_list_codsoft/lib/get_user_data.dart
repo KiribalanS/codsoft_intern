@@ -74,37 +74,31 @@ class GetUserData extends StatelessWidget {
       floatingActionButton: Card(
         color: Colors.purple,
         shape: CircleBorder(),
-        child: Padding(
-          padding: const EdgeInsets.only(
-            right: 12,
-            bottom: 12,
-          ),
-          child: IconButton(
-            color: Colors.white,
-            highlightColor: Colors.amber,
-            onPressed: () async {
-              if (_nameController.text != "" &&
-                  _professionController.text != "") {
-                userModal.userName = _nameController.text;
-                userModal.userProfession = _professionController.text;
-                await saveToSP();
-                Navigator.of(context).pushReplacement(
-                  MaterialPageRoute(
-                    builder: (context) => ListOfTasks(),
-                  ),
-                );
-              } else {
-                ScaffoldMessenger.of(context).showSnackBar(
-                  SnackBar(
-                    content: Text("Please fill all the fields"),
-                  ),
-                );
-              }
-            },
-            icon: Icon(
-              Icons.navigate_next_outlined,
-              size: 40,
-            ),
+        child: IconButton(
+          color: Colors.white,
+          highlightColor: Colors.amber,
+          onPressed: () async {
+            if (_nameController.text != "" &&
+                _professionController.text != "") {
+              userModal.userName = _nameController.text;
+              userModal.userProfession = _professionController.text;
+              await saveToSP();
+              Navigator.of(context).pushReplacement(
+                MaterialPageRoute(
+                  builder: (context) => ListOfTasks(),
+                ),
+              );
+            } else {
+              ScaffoldMessenger.of(context).showSnackBar(
+                SnackBar(
+                  content: Text("Please fill all the fields"),
+                ),
+              );
+            }
+          },
+          icon: Icon(
+            Icons.navigate_next_outlined,
+            size: 60,
           ),
         ),
       ),
