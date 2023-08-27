@@ -7,6 +7,7 @@ import 'package:shared_preferences/shared_preferences.dart';
 import 'package:todo_list_codsoft/list_of_tasks.dart';
 import 'package:todo_list_codsoft/main.dart';
 import 'package:todo_list_codsoft/models.dart';
+import 'package:todo_list_codsoft/show_completed_tasks.dart';
 
 class Todo extends StatefulWidget {
   Todo({super.key});
@@ -19,7 +20,7 @@ class Todo extends StatefulWidget {
 
 class _TodoState extends State<Todo> {
   String searchText = "";
-  TextEditingController _controller = TextEditingController(text: "");
+  final TextEditingController _controller = TextEditingController();
   bool toShowAllContents = true;
 
   void filterSearchResults(String query) {
@@ -27,18 +28,17 @@ class _TodoState extends State<Todo> {
     if (query.isNotEmpty) {
       for (var item in listOfTodo) {
         if (item.title.toLowerCase().contains(query.toLowerCase())) {
+          print("object");
+          widget.filteredList.clear();
+          widget.filteredList.add(item);
           setState(() {
-            widget.filteredList.clear();
-            widget.filteredList.add(item);
+            toShowAllContents = true;
           });
         } else {
-          setState(() {
-            widget.filteredList.clear();
-          });
+          // break;
         }
-        print(item.title + "=" + query);
+        print(item.title.toLowerCase().contains(query.toLowerCase()));
       }
-      return;
     } else {
       ScaffoldMessenger.of(context)
           .showSnackBar(SnackBar(content: Text("No tasks found")));
@@ -55,10 +55,22 @@ class _TodoState extends State<Todo> {
     super.initState();
   }
 
+  // @override
+  // void didChangeDependencies() {
+  //   super.didChangeDependencies();
+  //   _progress = widget.filteredList[selected].progress;
+  //   _dragBallPosition = widget.filteredList[selected].progress;
+  // }
+
+  int selected = 0;
+  double _progress = 0.0;
+  double _dragBallPosition = 0.0;
   @override
   Widget build(BuildContext context) {
     // if (toShowAllContents) {
     //   widget.filteredList.addAll(listOfTodo);
+    //   ScaffoldMessenger.of(context)
+    //       .showSnackBar(SnackBar(content: Text("No results found!")));
     // }
     return Scaffold(
       drawer: Drawer(
@@ -91,6 +103,19 @@ class _TodoState extends State<Todo> {
             Padding(
               padding: const EdgeInsets.all(12.0),
               child: ElevatedButton(
+                onPressed: () {
+                  Navigator.of(context).push(
+                    MaterialPageRoute(
+                      builder: (context) => ShowCompletedTask(),
+                    ),
+                  );
+                },
+                child: Text("View Completed Tasks"),
+              ),
+            ),
+            Padding(
+              padding: const EdgeInsets.all(12.0),
+              child: ElevatedButton(
                 onPressed: () async {
                   final sp = await SharedPreferences.getInstance();
                   sp.clear();
@@ -106,7 +131,7 @@ class _TodoState extends State<Todo> {
               ),
             ),
             Text(
-                "(Note : signing out will clear all your tasks and delete your account !!)")
+                "(Note : signing out will clear all your tasks and delete your account !!)"),
           ],
         ),
       ),
@@ -173,84 +198,224 @@ class _TodoState extends State<Todo> {
                     Padding(
                       padding: const EdgeInsets.all(8.0),
                       child: Text(
-                        "Ongoing Taks",
+                        "Ongoing Tasks",
                         style: TextStyle(
                           fontSize: 16,
                           color: Colors.grey,
                         ),
                       ),
                     ),
-                    AnimatedPadding(
-                      duration: Duration(seconds: 3),
-                      curve: Curves.bounceIn,
-                      padding: const EdgeInsets.only(left: 28.0),
-                      child: Row(
-                        mainAxisAlignment: MainAxisAlignment.spaceBetween,
-                        children: [
-                          CircleAvatar(
-                            backgroundColor: Colors.white,
-                            child: Stack(
-                              children: [
-                                Center(
-                                  child: Text(
-                                    "54%",
-                                    style: TextStyle(
-                                      fontSize: 12,
+                    widget.filteredList.isNotEmpty
+                        ? Column(
+                            children: [
+                              AnimatedPadding(
+                                duration: Duration(seconds: 3),
+                                curve: Curves.bounceIn,
+                                padding: const EdgeInsets.only(left: 28.0),
+                                child: Row(
+                                  mainAxisAlignment:
+                                      MainAxisAlignment.spaceBetween,
+                                  children: [
+                                    CircleAvatar(
+                                      backgroundColor: Colors.white,
+                                      child: Stack(
+                                        children: [
+                                          Center(
+                                            child: Text(
+                                              widget.filteredList[selected]
+                                                      .progress
+                                                      .toString()
+                                                      .substring(2, 3) +
+                                                  "0 %",
+                                              style: TextStyle(
+                                                fontSize: 12,
+                                              ),
+                                            ),
+                                          ),
+                                          CircularProgressIndicator(
+                                            value: widget.filteredList[selected]
+                                                .progress,
+                                            color: Colors.orange,
+                                            backgroundColor:
+                                                Colors.orange.shade50,
+                                          ),
+                                        ],
+                                      ),
+                                    ),
+                                    Padding(
+                                      padding: const EdgeInsets.all(12.0),
+                                      child: Card(
+                                        child: Padding(
+                                          padding: const EdgeInsets.all(8.0),
+                                          child: Text(
+                                            "Target Date \t :" +
+                                                widget.filteredList[selected]
+                                                    .targetDate,
+                                          ),
+                                        ),
+                                      ),
+                                    ),
+                                  ],
+                                ),
+                              ),
+                              Padding(
+                                padding: const EdgeInsets.all(28.0),
+                                child: Column(
+                                  crossAxisAlignment: CrossAxisAlignment.start,
+                                  children: [
+                                    Text(
+                                      widget.filteredList[selected].title,
+                                      style: TextStyle(
+                                        fontSize: 25,
+                                        fontWeight: FontWeight.bold,
+                                      ),
+                                    ),
+                                    Text(
+                                      widget.filteredList[selected].description,
+                                      style: TextStyle(
+                                        fontSize: 22,
+                                        fontWeight: FontWeight.normal,
+                                      ),
+                                    ),
+                                    Row(
+                                      children: [
+                                        Icon(
+                                          Icons.alarm_rounded,
+                                          size: 25,
+                                        ),
+                                        Padding(
+                                          padding: EdgeInsets.all(12),
+                                          child: Text(
+                                            widget.filteredList[selected]
+                                                    .startTime +
+                                                "\t to \t " +
+                                                widget.filteredList[selected]
+                                                    .targetTime,
+                                            style: TextStyle(
+                                              fontSize: 18,
+                                            ),
+                                          ),
+                                        ),
+                                      ],
+                                    ),
+                                  ],
+                                ),
+                              ),
+                              Padding(
+                                padding: const EdgeInsets.only(bottom: 12.0),
+                                child: Text("Drag to Set how much you finish!"),
+                              ),
+                              Padding(
+                                padding: const EdgeInsets.all(8.0),
+                                child: GestureDetector(
+                                  onHorizontalDragUpdate: (details) {
+                                    setState(() {
+                                      // Update _dragBallPosition based on the drag
+                                      _dragBallPosition +=
+                                          details.primaryDelta! /
+                                              MediaQuery.of(context).size.width;
+                                      _dragBallPosition =
+                                          _dragBallPosition.clamp(0.0, 1.0);
+
+                                      // Update _progress based on _dragBallPosition
+                                      widget.filteredList[selected].progress =
+                                          _dragBallPosition;
+                                    });
+                                  },
+                                  child: SizedBox(
+                                    width:
+                                        MediaQuery.of(context).size.width * 0.8,
+                                    child: Stack(
+                                      fit: StackFit.passthrough,
+                                      children: [
+                                        SizedBox(
+                                          width:
+                                              MediaQuery.of(context).size.width,
+                                          child: LinearProgressIndicator(
+                                            borderRadius:
+                                                BorderRadius.circular(25),
+                                            minHeight: 20,
+                                            value: widget.filteredList[selected]
+                                                .progress,
+                                            color: Colors.orange.shade400,
+                                            backgroundColor:
+                                                Colors.orange.shade50,
+                                          ),
+                                        ),
+                                        Positioned(
+                                          left: _dragBallPosition *
+                                                  MediaQuery.of(context)
+                                                      .size
+                                                      .width *
+                                                  0.8 -
+                                              8,
+                                          child: Container(
+                                            width: 20,
+                                            height: 20,
+                                            decoration: BoxDecoration(
+                                              color: Colors.orange.shade800,
+                                              shape: BoxShape.circle,
+                                            ),
+                                          ),
+                                        ),
+                                      ],
                                     ),
                                   ),
                                 ),
-                                CircularProgressIndicator(
-                                  value: 0.54,
-                                  color: Colors.orange,
-                                  backgroundColor: Colors.orange.shade50,
-                                ),
-                              ],
-                            ),
-                          ),
-                          Padding(
-                            padding: const EdgeInsets.all(12.0),
-                            child: Card(
-                              child: Padding(
-                                padding: const EdgeInsets.all(8.0),
-                                child: Text("6 days left"),
                               ),
-                            ),
-                          ),
-                        ],
-                      ),
-                    ),
-                    Padding(
-                      padding: const EdgeInsets.all(28.0),
-                      child: Column(
-                        crossAxisAlignment: CrossAxisAlignment.start,
-                        children: [
-                          Text(
-                            "To Do app design",
-                            style: TextStyle(
-                              fontSize: 25,
-                              fontWeight: FontWeight.bold,
-                            ),
-                          ),
-                          Row(
-                            children: [
-                              Icon(
-                                Icons.alarm_rounded,
-                                size: 25,
-                              ),
-                              Padding(
-                                padding: EdgeInsets.all(12),
-                                child: Text(
-                                  "10:00 AM to 12:30 PM",
-                                  style: TextStyle(
-                                    fontSize: 18,
-                                  ),
-                                ),
+                              ElevatedButton(
+                                onPressed: () async {
+                                  final sp =
+                                      await SharedPreferences.getInstance();
+
+                                  listOfFinishedTodo
+                                      .add(widget.filteredList[selected]);
+                                  final spCompletedTodo = listOfFinishedTodo
+                                      .map((e) => e.toJson())
+                                      .toList();
+                                  await sp.remove("completedTasks");
+                                  await sp.setStringList(
+                                    "completedTasks",
+                                    spCompletedTodo,
+                                  );
+                                  listOfTodo.removeAt(selected);
+
+                                  await sp.remove(userModal.userName);
+                                  final spTodo = listOfTodo
+                                      .map((e) => e.toJson())
+                                      .toList();
+                                  await sp.setStringList(
+                                    userModal.userName,
+                                    spTodo,
+                                  );
+
+                                  setState(() {
+                                    widget.filteredList.clear();
+                                    widget.filteredList.addAll(listOfTodo);
+                                  });
+                                  ScaffoldMessenger.of(context)
+                                      .showSnackBar(SnackBar(
+                                          content: Text(
+                                    "Task completed :)\nContinue Rocking!!",
+                                    textAlign: TextAlign.center,
+                                  )));
+                                },
+                                child: Text("Finish this Task!!"),
                               ),
                             ],
+                          )
+                        : Card(
+                            child: Padding(
+                              padding: const EdgeInsets.all(8.0),
+                              child: Text(
+                                "No tasks added\nCreate a task",
+                                textAlign: TextAlign.center,
+                                style: TextStyle(
+                                  fontSize: 18,
+                                ),
+                              ),
+                            ),
                           ),
-                        ],
-                      ),
-                    ),
                     Row(
                       mainAxisAlignment: MainAxisAlignment.spaceBetween,
                       children: [
@@ -286,41 +451,61 @@ class _TodoState extends State<Todo> {
                         ),
                         widget.filteredList.isNotEmpty
                             ? SizedBox(
-                                height:
-                                    MediaQuery.of(context).size.height * 0.4,
+                                // height:
+                                // MediaQuery.of(context).size.height * 0.4,
                                 child: ListView.builder(
+                                  // reverse: true,
+                                  primary: false,
+                                  shrinkWrap: true,
                                   physics: NeverScrollableScrollPhysics(),
                                   itemBuilder: (context, index) {
-                                    return Row(
-                                      children: [
-                                        Expanded(
-                                          child: customCard(
-                                            description: widget
-                                                .filteredList[index]
-                                                .description,
-                                            time: widget
-                                                .filteredList[index].targetTime,
-                                            title: widget
-                                                .filteredList[index].title,
-                                            index: index,
-                                            context: context,
+                                    return GestureDetector(
+                                      onTap: () => setState(() {
+                                        selected = index;
+                                      }),
+                                      child: Row(
+                                        children: [
+                                          Expanded(
+                                            child: customCard(
+                                              toHighLight: index == selected
+                                                  ? true
+                                                  : false,
+                                              description: widget
+                                                  .filteredList[index]
+                                                  .description,
+                                              time: widget.filteredList[index]
+                                                  .targetTime,
+                                              title: widget
+                                                  .filteredList[index].title,
+                                              index: index,
+                                              context: context,
+                                            ),
                                           ),
-                                        ),
-                                        IconButton(
-                                          onPressed: () {
-                                            setState(() {
+                                          IconButton(
+                                            onPressed: () {
                                               listOfTodo.removeAt(index);
-                                            });
-                                            ScaffoldMessenger.of(context)
-                                                .showSnackBar(SnackBar(
-                                              content: Text(
-                                                "Congratulations :>\n\tKeep going on",
-                                              ),
-                                            ));
-                                          },
-                                          icon: Icon(Icons.done),
-                                        ),
-                                      ],
+
+                                              widget.filteredList.clear();
+                                              widget.filteredList
+                                                  .addAll(listOfTodo);
+                                              setState(() {
+                                                selected =
+                                                    0; // got some bugs...need to clear the error!!
+                                              });
+                                              ScaffoldMessenger.of(context)
+                                                  .showSnackBar(SnackBar(
+                                                content: Text(
+                                                  "Task Deleted Successfully ",
+                                                ),
+                                              ));
+                                            },
+                                            icon: Icon(
+                                              Icons.delete,
+                                              color: Colors.red,
+                                            ),
+                                          ),
+                                        ],
+                                      ),
                                     );
                                   },
                                   itemCount: widget.filteredList.length,
@@ -349,7 +534,7 @@ class _TodoState extends State<Todo> {
   }
 }
 
-Widget customCard({title, description, time, index, context}) {
+Widget customCard({title, description, time, index, context, toHighLight}) {
   // print(time);
   return Row(
     children: [
@@ -361,7 +546,7 @@ Widget customCard({title, description, time, index, context}) {
           child: CircleAvatar(
             minRadius: 6,
             maxRadius: 9,
-            backgroundColor: Colors.white,
+            backgroundColor: toHighLight ? Colors.amber : Colors.white,
           ),
         ),
       ),

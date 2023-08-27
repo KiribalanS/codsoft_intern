@@ -13,14 +13,20 @@ class UserModal {
 class TodoModal {
   String title;
   String description;
-  String targetDate;
+  String startTime;
   String targetTime;
+  String startDate;
+  String targetDate;
+  double progress;
 
   TodoModal({
     required this.title,
     required this.description,
     required this.targetDate,
+    required this.startDate,
     required this.targetTime,
+    required this.startTime,
+    this.progress = 0.1,
   });
 
   Map<String, dynamic> toMap() {
@@ -29,6 +35,9 @@ class TodoModal {
       'description': description,
       'targetDate': targetDate,
       'targetTime': targetTime,
+      'startDate': startDate,
+      'startTime': startTime,
+      'progress': progress,
     };
   }
 
@@ -38,6 +47,9 @@ class TodoModal {
       description: map['description'],
       targetDate: map['targetDate'],
       targetTime: map['targetTime'],
+      startDate: map['startDate'],
+      startTime: map['startTime'],
+      progress: map['progress'],
     );
   }
 
@@ -56,3 +68,4 @@ UserModal userModal = UserModal(
 );
 
 List<TodoModal> listOfTodo = [];
+List<TodoModal> listOfFinishedTodo = [];

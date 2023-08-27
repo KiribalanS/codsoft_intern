@@ -3,6 +3,7 @@
 import 'dart:convert';
 
 import 'package:flutter/material.dart';
+import 'package:intl/intl.dart';
 import 'package:shared_preferences/shared_preferences.dart';
 import 'package:todo_list_codsoft/models.dart';
 import 'package:todo_list_codsoft/todo_screen.dart';
@@ -34,7 +35,7 @@ class ListOfTasks extends StatelessWidget {
       return pickedDate.toString();
       //perform required action
     } else {
-      return "Default";
+      return DateFormat.yMd(DateTime.now().add(Duration(days: 1))).toString();
     }
   }
 
@@ -50,11 +51,12 @@ class ListOfTasks extends StatelessWidget {
       return pickedTime.toString();
     } else {
       print("Time is not selected");
-      return "Default";
+      return TimeOfDay(hour: 2, minute: 30).format(context);
     }
   }
 
-  String targetDate = "Default";
+  String targetDate =
+      DateFormat.yMd().format(DateTime.now().add(Duration(days: 1))).toString();
   String targetTime = "Default";
 
   @override
@@ -77,7 +79,7 @@ class ListOfTasks extends StatelessWidget {
                     "Description of the task (optional)", _descController),
                 Row(
                   children: [
-                    customText("Select the target time: "),
+                    customText("Click the icon to Select the target time: "),
                     IconButton(
                       onPressed: () async {
                         targetTime = await _showTimePicker(context);
@@ -90,7 +92,7 @@ class ListOfTasks extends StatelessWidget {
                 ),
                 Row(
                   children: [
-                    customText("Select the target date: "),
+                    customText("Click the icon to Select the target date: "),
                     IconButton(
                       onPressed: () async {
                         targetDate = await _showDatePicker(context);
@@ -106,12 +108,18 @@ class ListOfTasks extends StatelessWidget {
           ),
           ElevatedButton(
             onPressed: () async {
-              if (_titleController.text != "" && _descController.text != "") {
+              if (_titleController.text != "") {
                 TodoModal newTodo = TodoModal(
+                  startTime: TimeOfDay.now().format(context),
+                  startDate: DateFormat.yMd().format(DateTime.now()).toString(),
                   title: _titleController.text,
-                  description: _descController.text,
+                  description: _descController.text == ""
+                      ? "No description added"
+                      : _descController.text,
                   targetDate: targetDate,
-                  targetTime: targetTime,
+                  targetTime: targetTime == "Default"
+                      ? TimeOfDay(hour: 2, minute: 30).format(context)
+                      : targetTime,
                 );
 
                 listOfTodo.add(newTodo);
@@ -124,7 +132,7 @@ class ListOfTasks extends StatelessWidget {
               } else {
                 ScaffoldMessenger.of(context).showSnackBar(
                   SnackBar(
-                    content: Text("Please fill the title and description"),
+                    content: Text("Please fill the title "),
                   ),
                 );
               }
@@ -138,7 +146,9 @@ class ListOfTasks extends StatelessWidget {
             child: SingleChildScrollView(
               child: Column(
                 children: [
-                  customText("Select a task!"),
+                  customText(
+                    "Double Tap on a Tile \nSelect a task!",
+                  ),
                   customCard(
                     title: "Nptel assignment",
                     description: "attend the assignment for week 3",
@@ -173,10 +183,16 @@ class ListOfTasks extends StatelessWidget {
     );
   }
 
+  // String _getTodayDate() {
+  //   return "" + datefor;
+  // }
+
   Widget customCard({title, description, time, context}) {
     return GestureDetector(
       onDoubleTap: () async {
         TodoModal newTodo = TodoModal(
+          startTime: TimeOfDay.now().format(context),
+          startDate: DateFormat.yMMMEd().format(DateTime.now()).toString(),
           title: title,
           description: description,
           targetDate: targetDate,
@@ -252,6 +268,7 @@ class ListOfTasks extends StatelessWidget {
       padding: const EdgeInsets.all(8.0),
       child: Text(
         content,
+        textAlign: TextAlign.center,
         style: TextStyle(
           fontSize: 18,
         ),

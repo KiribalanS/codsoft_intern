@@ -1,7 +1,5 @@
 // ignore_for_file: prefer_const_constructors, prefer_const_literals_to_create_immutables
 
-import 'dart:convert';
-
 import 'package:flutter/material.dart';
 import 'package:todo_list_codsoft/get_user_data.dart';
 import 'package:todo_list_codsoft/models.dart';
@@ -39,10 +37,11 @@ class _MyAppState extends State<MyApp> {
 
       final sharedPreferences = await SharedPreferences.getInstance();
       final spTodo = sharedPreferences.getStringList(userModal.userName);
-
-      final list =
-          spTodo!.map((todoString) => TodoModal.fromJson(todoString)).toList();
-      listOfTodo.addAll(list);
+      if (spTodo != null) {
+        final list =
+            spTodo.map((todoString) => TodoModal.fromJson(todoString)).toList();
+        listOfTodo.addAll(list);
+      }
       // print(list);
       // final single = sharedPreferences.getString("late");
       // print(TodoModal.fromJson(single!));
@@ -52,7 +51,7 @@ class _MyAppState extends State<MyApp> {
       isSignedIn = updatedIsSignedIn;
     });
 
-    print(isSignedIn);
+    // print(isSignedIn);
   }
 
   @override
