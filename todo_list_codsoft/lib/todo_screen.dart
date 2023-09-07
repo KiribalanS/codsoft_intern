@@ -59,12 +59,10 @@ class _TodoState extends State<Todo> {
   // void didChangeDependencies() {
   //   super.didChangeDependencies();
   //   _progress = widget.filteredList[selected].progress;
-  //   _dragBallPosition = widget.filteredList[selected].progress;
-  // }
+  //   widget.filteredList[selected]
 
   int selected = 0;
-  double _progress = 0.0;
-  double _dragBallPosition = 0.0;
+  // double _progress = 0.0;
   @override
   Widget build(BuildContext context) {
     // if (toShowAllContents) {
@@ -308,19 +306,35 @@ class _TodoState extends State<Todo> {
                               Padding(
                                 padding: const EdgeInsets.all(8.0),
                                 child: GestureDetector(
-                                  onHorizontalDragUpdate: (details) {
+                                  onHorizontalDragUpdate: (details) async {
                                     setState(() {
-                                      // Update _dragBallPosition based on the drag
-                                      _dragBallPosition +=
+                                      // Update widget.filteredList[selected]
+                                      widget.filteredList[selected].progress +=
                                           details.primaryDelta! /
                                               MediaQuery.of(context).size.width;
-                                      _dragBallPosition =
-                                          _dragBallPosition.clamp(0.0, 1.0);
-
-                                      // Update _progress based on _dragBallPosition
                                       widget.filteredList[selected].progress =
-                                          _dragBallPosition;
+                                          widget.filteredList[selected].progress
+                                              .clamp(0.0, 1.0);
+
+                                      // Update _progress based on widget.filteredList[selected]
+
+                                      widget.filteredList[selected].progress =
+                                          widget
+                                              .filteredList[selected].progress;
                                     });
+                                    print(listOfTodo[selected]
+                                        .progress
+                                        .toString());
+                                    final _sp =
+                                        await SharedPreferences.getInstance();
+                                    final spTodo = listOfTodo
+                                        .map((e) => e.toJson())
+                                        .toList();
+                                    _sp.remove(userModal.userName);
+                                    _sp.setStringList(
+                                      userModal.userName,
+                                      spTodo,
+                                    );
                                   },
                                   child: SizedBox(
                                     width:
@@ -343,7 +357,8 @@ class _TodoState extends State<Todo> {
                                           ),
                                         ),
                                         Positioned(
-                                          left: _dragBallPosition *
+                                          left: widget.filteredList[selected]
+                                                      .progress *
                                                   MediaQuery.of(context)
                                                       .size
                                                       .width *
