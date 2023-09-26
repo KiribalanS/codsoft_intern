@@ -62,7 +62,11 @@ class ListOfTasks extends StatelessWidget {
   @override
   Widget build(BuildContext context) {
     return Scaffold(
-      appBar: AppBar(title: Text("Create a task to do!")),
+      appBar: AppBar(
+        title: SafeArea(
+          child: Text("Create a task to do!"),
+        ),
+      ),
       body: Column(
         children: [
           Padding(
@@ -142,50 +146,62 @@ class ListOfTasks extends StatelessWidget {
             ),
           ),
           Text("(or)"),
-          Expanded(
-            child: SingleChildScrollView(
-              child: Column(
-                children: [
-                  customText(
-                    "Double Tap on a Tile \nSelect a task!",
-                  ),
-                  customCard(
-                    title: "Nptel assignment",
-                    description: "attend the assignment for week 3",
-                    time: "6:30 PM",
-                    context: context,
-                  ),
-                  customCard(
-                    title: "SE assignment",
-                    description: "Write the assignment for atleast 5 pages",
-                    time: "8:00 PM",
-                    context: context,
-                  ),
-                  customCard(
-                    title: "Mobile Recharge",
-                    description: "Recharge for 395 plan ",
-                    time: "12:00 PM",
-                    context: context,
-                  ),
-                  customCard(
-                    title: "Fiber Recharge",
-                    description: "Recharge for 580 plan ",
-                    time: "7:00 AM",
-                    context: context,
-                  ),
-                ],
+          SafeArea(
+            top: true,
+            child: SizedBox(
+              height: MediaQuery.of(context).size.height * 0.40,
+              child: SingleChildScrollView(
+                physics: AlwaysScrollableScrollPhysics(),
+                child: Column(
+                  children: [
+                    customText(
+                      "Double Tap on a Tile \nSelect a task!",
+                    ),
+                    customCard(
+                      title: "Nptel assignment",
+                      description: "attend the assignment for week 3",
+                      time: "6:30 PM",
+                      context: context,
+                    ),
+                    customCard(
+                      title: "SE assignment",
+                      description: "Write the assignment for atleast 5 pages",
+                      time: "8:00 PM",
+                      context: context,
+                    ),
+                    customCard(
+                      title: "Mobile Recharge",
+                      description: "Recharge for 395 plan ",
+                      time: "12:00 PM",
+                      context: context,
+                    ),
+                    customCard(
+                      title: "Fiber Recharge",
+                      description: "Recharge for 580 plan ",
+                      time: "7:00 AM",
+                      context: context,
+                    ),
+                    customCard(
+                      title: "Seminar",
+                      description: "Take seminar for second years",
+                      time: "10:00 AM",
+                      context: context,
+                    ),
+                    customCard(
+                      title: "class test",
+                      description: "Write the class test for english",
+                      time: "1:30 PM",
+                      context: context,
+                    ),
+                  ],
+                ),
               ),
             ),
-            //some default tasks
           ),
         ],
       ),
     );
   }
-
-  // String _getTodayDate() {
-  //   return "" + datefor;
-  // }
 
   Widget customCard({title, description, time, context}) {
     return GestureDetector(
@@ -270,7 +286,7 @@ class ListOfTasks extends StatelessWidget {
         content,
         textAlign: TextAlign.center,
         style: TextStyle(
-          fontSize: 18,
+          fontSize: 16,
         ),
       ),
     );
